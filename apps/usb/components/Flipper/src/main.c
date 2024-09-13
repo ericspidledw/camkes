@@ -41,33 +41,33 @@ int run()
 	uintptr_t flipper = 0;
 	uint16_t angle = 0;
  	printf("dummy flipper comp\n");
-	// printf("Starting the Flipper\n");
-	// printf("-------------------\n");
+	printf("Starting the Flipper\n");
+	printf("-------------------\n");
 
-	// /* Find the device */
-	// while (!flipper) {
-	// 	flipper = cdc_find(VID, DID);
-	// 	udelay(5000);
-	// }
-	// printf("Found flipper\n");
+	/* Find the device */
+	while (!flipper) {
+		flipper = cdc_find(VID, DID);
+		udelay(5000);
+	}
+	printf("Found flipper\n");
 
-	// /* Connect to the sub class driver */
-	// cdc_connect(flipper);
+	/* Connect to the sub class driver */
+	cdc_connect(flipper);
 
-	// cdc_configure(flipper, 115200, 1, 0, 8);
+	cdc_configure(flipper, 115200, 1, 0, 8);
 
-	// /* Send Data */
-	// clear_fault(flipper, 0xFFFF);
-	// set_status(flipper, 4);
+	/* Send Data */
+	clear_fault(flipper, 0xFFFF);
+	set_status(flipper, 4);
 
-	// angle = report_flipper_postion(flipper);
-	// printf("Flipper angle: %u\n", angle);
+	angle = report_flipper_postion(flipper);
+	printf("Flipper angle: %u\n", angle);
 
-	// set_flipper_effort(flipper, 30000);
+	set_flipper_effort(flipper, 30000);
 
-	// angle = report_flipper_postion(flipper);
-	// printf("Flipper angle: %u\n", angle);
+	angle = report_flipper_postion(flipper);
+	printf("Flipper angle: %u\n", angle);
 
-	// printf("Well done, Flipper\n");
-	// return 0;
+	printf("Well done, Flipper\n");
+	return 0;
 }

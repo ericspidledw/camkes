@@ -29,18 +29,19 @@ DeclareCAmkESComponent(
     Flipper
     SOURCES
     components/Flipper/src/main.c
-    # components/Flipper/src/lib_crc.c
-    # components/Flipper/src/flipper.c
-
+    components/Flipper/src/lib_crc.c
+    components/Flipper/src/flipper.c
     INCLUDES
-    include/lib_crc.h
+    include/
 )
 DeclareCAmkESComponent(
     Mobility
     SOURCES
     components/Mobility/src/main.c
+    components/Mobility/src/mobility.c
+    components/Mobility/src/lib_crc.c
     INCLUDES
-    include/lib_crc.h
+    include/
 )
 
 includeGlobalComponents()

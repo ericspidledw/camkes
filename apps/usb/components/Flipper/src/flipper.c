@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include <camkes.h>
-#include "lib_crc.h"
+#include <lib_crc.h>
 
 #define MAX_PKT_SIZE 250
 
