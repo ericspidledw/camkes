@@ -36,8 +36,8 @@ void camkes_make_simple(simple_t *simple);
 usb_t usb;
 ps_io_ops_t io_ops;
 ps_mutex_ops_t mutex_ops;
-// pit_t *pit_timer;
-// pstimer_t *tsc_timer; TODO: figure out what this is for
+// pit_t *pit_timer; TODO: figure out if these are needed seems like a timestamp thing? (see usb_read/write)
+// pstimer_t *tsc_timer;
 
 static void *mutex_init(void)
 {
@@ -62,13 +62,13 @@ static int mutex_destroy(void *mutex)
 void irq_handle(void)
 {
 	usb_handle_irq(&usb);
-	// irq_acknowledge();
+	irq_acknowledge();
 }
 
 void pit_irq_handle(void)
 {
 	// timer_handle_irq(pit_timer, 2);
-	// pit_irq_acknowledge();
+	pit_irq_acknowledge();
 }
 
 static int dma_morecore(size_t min_size, int cached,
@@ -132,10 +132,7 @@ void pre_init(void)
         ZF_LOGF("Failed to allocate iospace slot");
     }
     int bus, dev, fun;
-    // sscanf(pci_bdf, "%x:%x.%d", &bus, &dev, &fun); // we get the bdf some other way now....
-    bus = 0;
-    dev = 26;
-    fun = 0;
+    sscanf(pci_bdf, "%x:%x.%d", &bus, &dev, &fun);
     int pci_bdf_int =  bus * 256 + dev * 8 + fun;
     error = simple_get_iospace(&camkes_simple, iospace_id, pci_bdf_int, &iospace);
     if (error) {

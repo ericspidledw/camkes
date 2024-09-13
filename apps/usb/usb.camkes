@@ -19,28 +19,28 @@ import "components/Mobility/Mobility.camkes";
 
 component EHCI {
 	hardware;
-// #ifdef CONFIG_PLAT_PC99
+#ifdef CONFIG_PLAT_PC99
 	dataport Buf(0x1000) mem;
-// #else
-	// dataport Buf mem;
-// #endif
-// #ifdef CONFIG_ARCH_ARM
-// 	dataport Buf phy;
-// 	dataport Buf clk;
-// 	dataport Buf alg;
-// #elif CONFIG_ARCH_X86
+#else
+	dataport Buf mem;
+#endif
+#ifdef CONFIG_ARCH_ARM
+	dataport Buf phy;
+	dataport Buf clk;
+	dataport Buf alg;
+#elif defined(CONFIG_ARCH_X86)
 	provides IOPort port;
-// #endif
+#endif
 	emits DataAvailable irq;
 }
 
-// #ifdef CONFIG_ARCH_X86
+#ifdef CONFIG_ARCH_X86
 component PIT {
 	hardware;
 	provides IOPort port;
 	emits PIRQ irq;
 }
-// #endif
+#endif
 
 assembly {
 	composition {
@@ -48,21 +48,20 @@ assembly {
 		component Driver drv;
 		component Flipper flip;
 		// component Mobility mob;
-// #ifdef CONFIG_ARCH_X86
+#ifdef CONFIG_ARCH_X86
 		component PIT pit;
-// #endif
-
+#endif
 		connection seL4HardwareMMIO ehci_mem(from drv.mem, to ehci.mem);
 		connection seL4HardwareInterrupt irq(from ehci.irq, to drv.irq);
-// #ifdef CONFIG_ARCH_ARM
-// 		connection seL4HardwareMMIO ehci_phy(from drv.phy, to ehci.phy);
-// 		connection seL4HardwareMMIO ehci_clk(from drv.clk, to ehci.clk);
-// 		connection seL4HardwareMMIO ehci_alg(from drv.alg, to ehci.alg);
-// #elif CONFIG_ARCH_X86
+#ifdef CONFIG_ARCH_ARM
+		connection seL4HardwareMMIO ehci_phy(from drv.phy, to ehci.phy);
+		connection seL4HardwareMMIO ehci_clk(from drv.clk, to ehci.clk);
+		connection seL4HardwareMMIO ehci_alg(from drv.alg, to ehci.alg);
+#elif defined(CONFIG_ARCH_X86)
 		connection seL4HardwareIOPort pci(from drv.port, to ehci.port);
 		connection seL4HardwareIOPort pitio(from drv.pit_port, to pit.port);
 		connection seL4HardwareInterrupt pit_irq(from pit.irq, to drv.pit_irq);
-// #endif
+#endif
 		connection seL4RPCCall flip_usb(from flip.cdc, to drv.cdc);
 		connection seL4SharedData flip_data(from flip.fdata, to drv.buf);
 
@@ -95,7 +94,7 @@ assembly {
 		ehci.irq_irq_number = 72;
 #endif
 		drv.dma_pool = 409600;
-// #ifdef CONFIG_IOMMU
+#ifdef CONFIG_IOMMU
         drv.simple = true;
         drv.cnode_size_bits = 12;
         drv.iospaces = "0x13:0x00:0x1a:0";
@@ -103,6 +102,6 @@ assembly {
         drv.pci_bdf = "0:1a.0";
         drv.simple_untyped20_pool = 2;
         drv.heap_size = 0x10000;
-// #endif
+#endif
 	}
 }

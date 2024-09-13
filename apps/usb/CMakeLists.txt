@@ -10,9 +10,9 @@ CamkESAddCPPInclude("${CMAKE_CURRENT_LIST_DIR}/include/")
 
 set(CAmkESCPP ON CACHE BOOL "" FORCE)
 if("${KernelArch}" STREQUAL "x86")
-    set(cpp_define -DKernelArchX86)
+    set(cpp_define -DCONFIG_ARCH_X86 -DCONFIG_IOMMU -DCONFIG_PLAT_PC99)
 elseif("${KernelArch}" STREQUAL "arm")
-    set(cpp_define -DKernelArchArm)
+    set(cpp_define -DCONFIG_ARCH_ARM)
 endif()
 
 

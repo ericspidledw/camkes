@@ -15,36 +15,36 @@ import "../../interfaces/USB.idl4";
 
 component Driver {
 	/* EHCI controller */
-// #ifdef CONFIG_PLAT_PC99
+#ifdef CONFIG_PLAT_PC99
 	dataport Buf(0x1000) mem;
-// #else
-	// dataport Buf mem;
-// #endif
+#else
+dataport Buf mem;
+#endif
 	consumes DataAvailable irq;
-// #ifdef CONFIG_ARCH_ARM
-	// dataport Buf phy;
-	// dataport Buf clk;
-	// dataport Buf alg;
-// #elif CONFIG_ARCH_X86
+#ifdef CONFIG_ARCH_ARM
+	dataport Buf phy;
+	dataport Buf clk;
+	dataport Buf alg;
+#elif defined(CONFIG_ARCH_X86)
 	uses IOPort port;
-// #endif
+#endif
 	has mutex m;
 	has mutex dma;
 
-// #ifdef CONFIG_IOMMU
+#ifdef CONFIG_IOMMU
     attribute int iospace_id;
     /* format for bdf is "BUS:DEV.fun" where BUS and DEV are hex and FUN is decimal */
     attribute string pci_bdf;
-// #endif
+#endif
 
 	/* USB interface */
 	dataport Buf buf;
 	provides USB_CDC cdc;
 
-// #ifdef CONFIG_ARCH_X86
+#ifdef CONFIG_ARCH_X86
 	/* PIT timer */
 	consumes PIRQ pit_irq;
 	uses IOPort pit_port;
-// #endif
+#endif
 }
 
