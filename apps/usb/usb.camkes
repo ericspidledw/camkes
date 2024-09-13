@@ -1,0 +1,108 @@
+/*
+ * Copyright 2016, Data61
+ * Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+ * ABN 41 687 119 230.
+ *
+ * This software may be distributed and modified according to the term of
+ * the BSD 2-Clause license. Note that NO WARRANTY is provided.
+ * See "LICENSE_BSD2.txt" for details.
+ *
+ * @TAG(D61_BSD)
+ */
+
+// #include <autoconf.h>
+import <std_connector.camkes>;
+
+import "components/Driver/Driver.camkes";
+import "components/Flipper/Flipper.camkes";
+import "components/Mobility/Mobility.camkes";
+
+component EHCI {
+	hardware;
+// #ifdef CONFIG_PLAT_PC99
+	dataport Buf(0x1000) mem;
+// #else
+	// dataport Buf mem;
+// #endif
+// #ifdef CONFIG_ARCH_ARM
+// 	dataport Buf phy;
+// 	dataport Buf clk;
+// 	dataport Buf alg;
+// #elif CONFIG_ARCH_X86
+	provides IOPort port;
+// #endif
+	emits DataAvailable irq;
+}
+
+// #ifdef CONFIG_ARCH_X86
+component PIT {
+	hardware;
+	provides IOPort port;
+	emits PIRQ irq;
+}
+// #endif
+
+assembly {
+	composition {
+		component EHCI ehci;
+		component Driver drv;
+		component Flipper flip;
+		// component Mobility mob;
+// #ifdef CONFIG_ARCH_X86
+		component PIT pit;
+// #endif
+
+		connection seL4HardwareMMIO ehci_mem(from drv.mem, to ehci.mem);
+		connection seL4HardwareInterrupt irq(from ehci.irq, to drv.irq);
+// #ifdef CONFIG_ARCH_ARM
+// 		connection seL4HardwareMMIO ehci_phy(from drv.phy, to ehci.phy);
+// 		connection seL4HardwareMMIO ehci_clk(from drv.clk, to ehci.clk);
+// 		connection seL4HardwareMMIO ehci_alg(from drv.alg, to ehci.alg);
+// #elif CONFIG_ARCH_X86
+		connection seL4HardwareIOPort pci(from drv.port, to ehci.port);
+		connection seL4HardwareIOPort pitio(from drv.pit_port, to pit.port);
+		connection seL4HardwareInterrupt pit_irq(from pit.irq, to drv.pit_irq);
+// #endif
+		connection seL4RPCCall flip_usb(from flip.cdc, to drv.cdc);
+		connection seL4SharedData flip_data(from flip.fdata, to drv.buf);
+
+		// connection seL4RPCCall mob_usb(from mob.cdc, to drv.cdc);
+		// connection seL4SharedData mob_data(from mob.fdata, to drv.buf);
+	}
+	configuration {
+		ehci.mem_paddr = 0xc0715000;
+		ehci.mem_size = 0x1000;
+		ehci.irq_irq_type = "pci";
+		ehci.irq_irq_ioapic = 0;
+		ehci.irq_irq_ioapic_pin = 16;
+		ehci.irq_irq_vector = 16;
+		ehci.port_attributes = "0xCF8:0xCFF";
+
+		pit.port_attributes = "0x40:0x43";
+		pit.irq_irq_type = "isa";
+		pit.irq_irq_ioapic = 0;
+		pit.irq_irq_ioapic_pin = 2;
+		pit.irq_irq_vector = 2;
+#if CONFIG_PLAT_IMX6
+		ehci.mem_paddr = 0x2184000;
+		ehci.mem_size = 0x1000;
+		ehci.phy_paddr = 0x20CA000;
+		ehci.phy_size = 0x1000;
+		ehci.clk_paddr = 0x20C4000;
+		ehci.clk_size = 0x1000;
+		ehci.alg_paddr = 0x20C8000;
+		ehci.alg_size = 0x1000;
+		ehci.irq_irq_number = 72;
+#endif
+		drv.dma_pool = 409600;
+// #ifdef CONFIG_IOMMU
+        drv.simple = true;
+        drv.cnode_size_bits = 12;
+        drv.iospaces = "0x13:0x00:0x1a:0";
+        drv.iospace_id = 0x13;
+        drv.pci_bdf = "0:1a.0";
+        drv.simple_untyped20_pool = 2;
+        drv.heap_size = 0x10000;
+// #endif
+	}
+}
