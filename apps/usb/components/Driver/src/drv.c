@@ -12,6 +12,21 @@
 
 #include <camkes.h>
 #include <camkes/io.h>
+// #include <camkes/dma.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <usb/usb.h>
+#include <simple/simple.h>
+#include <allocman/bootstrap.h>
+#include <allocman/allocman.h>
+#include <allocman/vka.h>
+#include <sel4utils/mapping.h>
+#include <vka/capops.h>
+#include <simple/simple_helpers.h>
+
+#include <camkes.h>
+#include <camkes/io.h>
 #include <camkes/dma.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,18 +41,13 @@
 #include <sel4utils/mapping.h>
 #include <vka/capops.h>
 
-#include <dma/dma.h>
 #include <platsupport/timer.h>
 #include <platsupport/plat/pit.h>
 #include <usb/drivers/cdc.h>
 
-void camkes_make_simple(simple_t *simple);
-
 usb_t usb;
 ps_io_ops_t io_ops;
 ps_mutex_ops_t mutex_ops;
-// pit_t *pit_timer; TODO: figure out if these are needed seems like a timestamp thing? (see usb_read/write)
-// pstimer_t *tsc_timer;
 
 static void *mutex_init(void)
 {
@@ -65,53 +75,61 @@ void irq_handle(void)
 	irq_acknowledge();
 }
 
-void pit_irq_handle(void)
+static void* (*dma_alloc)(void *cookie, size_t size, int align, int cached,
+		ps_mem_flags_t flags);
+static void (*dma_free)(void *cookie, void *addr, size_t size);
+
+static void* dma_alloc_hack(void *cookie, size_t size, int align, int cached,
+		ps_mem_flags_t flags)
 {
-	// timer_handle_irq(pit_timer, 2);
-	pit_irq_acknowledge();
+	void *p = NULL;
+    int ret = 0;
+	ret = dma_lock();
+    assert(!ret);
+	if (dma_alloc) {
+		p = dma_alloc(cookie, size, align, cached, flags);
+	}
+	ret = dma_unlock();
+    assert(!ret);
+
+	return p;
 }
 
-static int dma_morecore(size_t min_size, int cached,
-		struct dma_mem_descriptor *dma_desc)
+static void dma_free_hack(void *cookie, void *addr, size_t size)
 {
-	uintptr_t vaddr, paddr;
-
-	min_size = ROUND_UP(min_size, PAGE_SIZE_4K);
-
-	vaddr = (uintptr_t) (min_size, PAGE_SIZE_4K, false);
-	assert(vaddr);
-
-	paddr = (uintptr_t)camkes_dma_get_paddr((void*)vaddr);
-	assert(paddr);
-
-	dma_desc->vaddr = vaddr;
-	dma_desc->paddr = paddr;
-	dma_desc->cached = 0;
-	dma_desc->size_bits = PAGE_BITS_4K;
-	dma_desc->alloc_cookie = NULL;
-	dma_desc->cookie = NULL;
-
-	return 0;
+	int ret =dma_lock();
+    assert(!ret);
+	if (dma_free) {
+		dma_free(cookie, addr, size);
+	}
+	ret = dma_unlock();
+    assert(!ret);
 }
 
 void pre_init(void)
 {
 	int err;
-
+    printf("We're in pre init\n");
 	mutex_ops.mutex_new = mutex_init;
 	mutex_ops.mutex_lock = mutex_lock;
 	mutex_ops.mutex_unlock = mutex_unlock;
 	mutex_ops.mutex_destroy = mutex_destroy;
 
 	camkes_io_ops(&io_ops);
+    printf("established our camkes io ops\n");
 
-	dma_dmaman_init(dma_morecore, NULL, &io_ops.dma_manager);
+	dma_alloc = io_ops.dma_manager.dma_alloc_fn;
+	dma_free = io_ops.dma_manager.dma_free_fn;
+
+	io_ops.dma_manager.dma_alloc_fn = dma_alloc_hack;
+	io_ops.dma_manager.dma_free_fn = dma_free_hack;
 
 #ifdef CONFIG_IOMMU
     /* Temporary hack to map the DMA memory into the iommu */
     int error;
     simple_t camkes_simple;
     camkes_make_simple(&camkes_simple);
+    printf("made our simple\n");
     allocman_t *allocman;
     vka_t vka;
     static char allocator_mempool[65536];
@@ -123,6 +141,7 @@ void pre_init(void)
             BIT(simple_get_cnode_size_bits(&camkes_simple)),
             sizeof(allocator_mempool), allocator_mempool
     );
+    printf("Allocman created using boostrap\n");
     assert(allocman);
     error = allocman_add_simple_untypeds(allocman, &camkes_simple);
     allocman_make_vka(&vka, allocman);
@@ -186,9 +205,5 @@ void pre_init(void)
 
 	err = usb_init(USB_HOST_DEFAULT, &io_ops, &mutex_ops, &usb);
 	assert(!err);
-
-	// err = pit_init(pit_timer, io_ops.io_port_ops);
-	// assert(!err);
-	// tsc_timer = tsc_get_timer(pit_timer);
 }
 

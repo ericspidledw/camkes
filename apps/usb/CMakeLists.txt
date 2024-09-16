@@ -26,23 +26,34 @@ DeclareCAmkESComponent(
 
 )
 DeclareCAmkESComponent(
-    Flipper
+    Pl2303
     SOURCES
-    components/Flipper/src/main.c
-    components/Flipper/src/lib_crc.c
-    components/Flipper/src/flipper.c
-    INCLUDES
-    include/
+    components/Pl2303/src/main.c
 )
-DeclareCAmkESComponent(
-    Mobility
-    SOURCES
-    components/Mobility/src/main.c
-    components/Mobility/src/mobility.c
-    components/Mobility/src/lib_crc.c
-    INCLUDES
-    include/
-)
+# DeclareCAmkESComponent(
+#     Probe
+#     SOURCES
+#     components/Probe/src/main.c
+# )
+
+# DeclareCAmkESComponent(
+#     Flipper
+#     SOURCES
+#     components/Flipper/src/main.c
+#     components/Flipper/src/lib_crc.c
+#     components/Flipper/src/flipper.c
+#     INCLUDES
+#     include/
+# )
+# DeclareCAmkESComponent(
+#     Mobility
+#     SOURCES
+#     components/Mobility/src/main.c
+#     components/Mobility/src/mobility.c
+#     components/Mobility/src/lib_crc.c
+#     INCLUDES
+#     include/
+# )
 
 includeGlobalComponents()
 

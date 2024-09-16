@@ -14,8 +14,8 @@
 import <std_connector.camkes>;
 
 import "components/Driver/Driver.camkes";
-import "components/Flipper/Flipper.camkes";
-import "components/Mobility/Mobility.camkes";
+import "components/Pl2303/Pl2303.camkes";
+// import "components/Probe/Probe.camkes";
 
 component EHCI {
 	hardware;
@@ -28,61 +28,44 @@ component EHCI {
 	dataport Buf phy;
 	dataport Buf clk;
 	dataport Buf alg;
-#elif defined(CONFIG_ARCH_X86)
+#elif CONFIG_ARCH_X86
 	provides IOPort port;
 #endif
 	emits DataAvailable irq;
 }
 
-#ifdef CONFIG_ARCH_X86
-component PIT {
-	hardware;
-	provides IOPort port;
-	emits PIRQ irq;
-}
-#endif
-
 assembly {
 	composition {
 		component EHCI ehci;
 		component Driver drv;
-		component Flipper flip;
-		// component Mobility mob;
-#ifdef CONFIG_ARCH_X86
-		component PIT pit;
-#endif
+		component Pl2303 serial;
+		// component Probe probe;
+
 		connection seL4HardwareMMIO ehci_mem(from drv.mem, to ehci.mem);
 		connection seL4HardwareInterrupt irq(from ehci.irq, to drv.irq);
 #ifdef CONFIG_ARCH_ARM
 		connection seL4HardwareMMIO ehci_phy(from drv.phy, to ehci.phy);
 		connection seL4HardwareMMIO ehci_clk(from drv.clk, to ehci.clk);
 		connection seL4HardwareMMIO ehci_alg(from drv.alg, to ehci.alg);
-#elif defined(CONFIG_ARCH_X86)
+#elif CONFIG_ARCH_X86
 		connection seL4HardwareIOPort pci(from drv.port, to ehci.port);
-		connection seL4HardwareIOPort pitio(from drv.pit_port, to pit.port);
-		connection seL4HardwareInterrupt pit_irq(from pit.irq, to drv.pit_irq);
 #endif
-		connection seL4RPCCall flip_usb(from flip.cdc, to drv.cdc);
-		connection seL4SharedData flip_data(from flip.fdata, to drv.buf);
+		connection seL4RPCCall serial_usb(from serial.cdc, to drv.cdc);
+		connection seL4SharedData serial_data(from serial.fdata, to drv.buf);
 
-		// connection seL4RPCCall mob_usb(from mob.cdc, to drv.cdc);
-		// connection seL4SharedData mob_data(from mob.fdata, to drv.buf);
+		// connection seL4RPCCall probe_usb(from probe.cdc, to drv.cdc);
+		// connection seL4SharedData probe_data(from probe.fdata, to drv.buf);
 	}
 	configuration {
-		ehci.mem_paddr = 0xc0715000;
+#ifdef CONFIG_PLAT_PC99
+		ehci.mem_paddr = 0x7fdd000;
 		ehci.mem_size = 0x1000;
 		ehci.irq_irq_type = "pci";
 		ehci.irq_irq_ioapic = 0;
 		ehci.irq_irq_ioapic_pin = 16;
 		ehci.irq_irq_vector = 16;
 		ehci.port_attributes = "0xCF8:0xCFF";
-
-		pit.port_attributes = "0x40:0x43";
-		pit.irq_irq_type = "isa";
-		pit.irq_irq_ioapic = 0;
-		pit.irq_irq_ioapic_pin = 2;
-		pit.irq_irq_vector = 2;
-#if CONFIG_PLAT_IMX6
+#elif defined(CONFIG_PLAT_IMX6)
 		ehci.mem_paddr = 0x2184000;
 		ehci.mem_size = 0x1000;
 		ehci.phy_paddr = 0x20CA000;

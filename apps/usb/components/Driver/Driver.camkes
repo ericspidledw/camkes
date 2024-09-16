@@ -10,7 +10,7 @@
  * @TAG(D61_BSD)
  */
 
-//#include <autoconf.h>
+// #include <autoconf.h>
 import "../../interfaces/USB.idl4";
 
 component Driver {
@@ -18,7 +18,7 @@ component Driver {
 #ifdef CONFIG_PLAT_PC99
 	dataport Buf(0x1000) mem;
 #else
-dataport Buf mem;
+	dataport Buf mem;
 #endif
 	consumes DataAvailable irq;
 #ifdef CONFIG_ARCH_ARM
@@ -40,11 +40,5 @@ dataport Buf mem;
 	/* USB interface */
 	dataport Buf buf;
 	provides USB_CDC cdc;
-
-#ifdef CONFIG_ARCH_X86
-	/* PIT timer */
-	consumes PIRQ pit_irq;
-	uses IOPort pit_port;
-#endif
 }
 
