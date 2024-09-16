@@ -48,6 +48,7 @@
 usb_t usb;
 ps_io_ops_t io_ops;
 ps_mutex_ops_t mutex_ops;
+void camkes_make_simple(simple_t *simple) __attribute__((weak));
 
 static void *mutex_init(void)
 {
@@ -72,7 +73,10 @@ static int mutex_destroy(void *mutex)
 void irq_handle(void)
 {
 	usb_handle_irq(&usb);
-	irq_acknowledge();
+	int ret = irq_acknowledge();
+    if(ret){
+        printf("Failed to ack USB IRQ\n");
+    }
 }
 
 static void* (*dma_alloc)(void *cookie, size_t size, int align, int cached,
@@ -128,7 +132,13 @@ void pre_init(void)
     /* Temporary hack to map the DMA memory into the iommu */
     int error;
     simple_t camkes_simple;
-    camkes_make_simple(&camkes_simple);
+    if(camkes_make_simple){
+        camkes_make_simple(&camkes_simple);
+    }
+    else{
+        printf("We don't have any make simple\n");
+        return;
+    }
     printf("made our simple\n");
     allocman_t *allocman;
     vka_t vka;
@@ -157,7 +167,7 @@ void pre_init(void)
     if (error) {
         ZF_LOGF("Failed to get iospace");
     }
-    int total_bufs = 1024;
+    int total_bufs = 99;
     int num_bufs = 0;
     void **dma_bufs = malloc(sizeof(void*) * total_bufs);
     if (!dma_bufs) {
@@ -171,8 +181,10 @@ void pre_init(void)
                 ZF_LOGF("Failed to realloc");
             }
         }
+        printf("Trying to make camkes dma allocation\n");
         void *buf = camkes_dma_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K, false);
         if (!buf) {
+            printf("Failed at buf number %d\n",  num_bufs);
             break;
         }
         dma_bufs[num_bufs] = buf;
