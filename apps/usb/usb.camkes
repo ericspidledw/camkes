@@ -58,7 +58,7 @@ assembly {
 	}
 	configuration {
 #ifdef CONFIG_PLAT_PC99
-		ehci.mem_paddr = 0x7fdd000;
+		ehci.mem_paddr = 0xf7fdd000;
 		ehci.mem_size = 0x1000;
 		ehci.irq_irq_type = "pci";
 		ehci.irq_irq_ioapic = 0;
@@ -77,6 +77,7 @@ assembly {
 		ehci.irq_irq_number = 72;
 #endif
 		drv.dma_pool = 409600;
+        drv.dma_pool_paddr = 0x10000000;
 #ifdef CONFIG_IOMMU
         drv.simple = true;
         drv.cnode_size_bits = 12;
