@@ -49,6 +49,15 @@ usb_t usb;
 ps_io_ops_t io_ops;
 ps_mutex_ops_t mutex_ops;
 void camkes_make_simple(simple_t *simple) __attribute__((weak));
+seL4_CPtr timeout_notification(void);
+void udelay(uint64_t us);
+
+void udelay(uint64_t us) {
+    seL4_Word badge;
+    seL4_CPtr notification = timeout_notification();
+    timeout_oneshot_relative(0, us * 1000);
+	seL4_Wait(notification, &badge);
+}
 
 static void *mutex_init(void)
 {
@@ -113,14 +122,12 @@ static void dma_free_hack(void *cookie, void *addr, size_t size)
 void pre_init(void)
 {
 	int err;
-    printf("We're in pre init\n");
 	mutex_ops.mutex_new = mutex_init;
 	mutex_ops.mutex_lock = mutex_lock;
 	mutex_ops.mutex_unlock = mutex_unlock;
 	mutex_ops.mutex_destroy = mutex_destroy;
 
 	camkes_io_ops(&io_ops);
-    printf("established our camkes io ops\n");
 
 	dma_alloc = io_ops.dma_manager.dma_alloc_fn;
 	dma_free = io_ops.dma_manager.dma_free_fn;
@@ -139,7 +146,7 @@ void pre_init(void)
         printf("We don't have any make simple\n");
         return;
     }
-    printf("made our simple\n");
+    // printf("made our simple\n");
     allocman_t *allocman;
     vka_t vka;
     static char allocator_mempool[65536];
@@ -151,7 +158,7 @@ void pre_init(void)
             BIT(simple_get_cnode_size_bits(&camkes_simple)),
             sizeof(allocator_mempool), allocator_mempool
     );
-    printf("Allocman created using boostrap\n");
+    // printf("Allocman created using boostrap\n");
     assert(allocman);
     error = allocman_add_simple_untypeds(allocman, &camkes_simple);
     allocman_make_vka(&vka, allocman);
@@ -181,7 +188,6 @@ void pre_init(void)
                 ZF_LOGF("Failed to realloc");
             }
         }
-        printf("Trying to make camkes dma allocation\n");
         void *buf = camkes_dma_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K, false);
         if (!buf) {
             printf("Failed at buf number %d\n",  num_bufs);
@@ -215,7 +221,9 @@ void pre_init(void)
     free(dma_bufs);
 #endif /* CONFIG_IOMMU */
 
-	err = usb_init(USB_HOST_DEFAULT, &io_ops, &mutex_ops, &usb);
+    // ZF_LOGE("Yo we are debugging the IOMMU");
+    // seL4_DebugDumpIOMMU();
+	err = usb_init(USB_XHCI1, &io_ops, &mutex_ops, &usb); // alter host to use XHCI
 	assert(!err);
 }
 

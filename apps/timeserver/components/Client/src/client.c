@@ -13,6 +13,7 @@
 
 seL4_CPtr timeout_notification(void);
 
+
 int run(void)
 {
     seL4_Word badge;

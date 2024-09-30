@@ -12,11 +12,12 @@
 
 // #include <autoconf.h>
 import "../../interfaces/USB.idl4";
+import <TimeServer/TimeServer.camkes>;
 
 component Driver {
 	/* EHCI controller */
 #ifdef CONFIG_PLAT_PC99
-	dataport Buf(0x1000) mem;
+	dataport Buf(0x10000) mem; // this needs to match our host controller size
 #else
 	dataport Buf mem;
 #endif
@@ -27,6 +28,7 @@ component Driver {
 	dataport Buf alg;
 #elif defined(CONFIG_ARCH_X86)
 	uses IOPort port;
+	uses Timer timeout;
 #endif
 	has mutex m;
 	has mutex dma;
