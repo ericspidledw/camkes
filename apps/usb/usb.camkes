@@ -58,12 +58,12 @@ assembly {
 	}
 	configuration {
 #ifdef CONFIG_PLAT_PC99
-		ehci.mem_paddr = 0xf7fdd000;
+		ehci.mem_paddr = 0xf7fde000;
 		ehci.mem_size = 0x1000;
 		ehci.irq_irq_type = "pci";
 		ehci.irq_irq_ioapic = 0;
-		ehci.irq_irq_ioapic_pin = 16;
-		ehci.irq_irq_vector = 16;
+		ehci.irq_irq_ioapic_pin = 23;
+		ehci.irq_irq_vector = 23;
 		ehci.port_attributes = "0xCF8:0xCFF";
 #elif defined(CONFIG_PLAT_IMX6)
 		ehci.mem_paddr = 0x2184000;
@@ -81,9 +81,9 @@ assembly {
 #ifdef CONFIG_IOMMU
         drv.simple = true;
         drv.cnode_size_bits = 12;
-        drv.iospaces = "0x13:0x00:0x1a:0";
+        drv.iospaces = "0x13:0x00:0x1d:0";
         drv.iospace_id = 0x13;
-        drv.pci_bdf = "0:1a.0";
+        drv.pci_bdf = "0:1d.0";
         drv.simple_untyped20_pool = 2;
         drv.heap_size = 0x10000;
 #endif

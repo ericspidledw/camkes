@@ -18,7 +18,7 @@
 #define VID 0x067b //Prolific Technology Inc.
 #define DID 0x2303 //USB-Serial Controller
 
-char *str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+char *str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n";
 
 static inline void udelay(uint32_t us)
 {
@@ -50,6 +50,18 @@ int run()
 	/* Send Data */
 	memcpy(fdata, str, strlen(str));
 	cdc_write(pl2303, strlen(str));
+
+    /* /\* memset(fdata, 0, strlen(str)); *\/ */
+
+    /* while(1) { */
+    /*     int num = cdc_read(pl2303, 10); */
+    /*     ZF_LOGE("Read %d bytes", num); */
+
+    /*     if (num) { */
+    /*         ZF_LOGE("%s", fdata); */
+    /*     } */
+    /*     ps_udelay(US_IN_S); */
+    /* } */
 
 	printf("Well done, PL2303\n");
 	return 0;

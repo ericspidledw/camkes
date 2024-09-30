@@ -113,14 +113,12 @@ static void dma_free_hack(void *cookie, void *addr, size_t size)
 void pre_init(void)
 {
 	int err;
-    printf("We're in pre init\n");
 	mutex_ops.mutex_new = mutex_init;
 	mutex_ops.mutex_lock = mutex_lock;
 	mutex_ops.mutex_unlock = mutex_unlock;
 	mutex_ops.mutex_destroy = mutex_destroy;
 
 	camkes_io_ops(&io_ops);
-    printf("established our camkes io ops\n");
 
 	dma_alloc = io_ops.dma_manager.dma_alloc_fn;
 	dma_free = io_ops.dma_manager.dma_free_fn;
@@ -139,7 +137,6 @@ void pre_init(void)
         printf("We don't have any make simple\n");
         return;
     }
-    printf("made our simple\n");
     allocman_t *allocman;
     vka_t vka;
     static char allocator_mempool[65536];
@@ -151,7 +148,6 @@ void pre_init(void)
             BIT(simple_get_cnode_size_bits(&camkes_simple)),
             sizeof(allocator_mempool), allocator_mempool
     );
-    printf("Allocman created using boostrap\n");
     assert(allocman);
     error = allocman_add_simple_untypeds(allocman, &camkes_simple);
     allocman_make_vka(&vka, allocman);
@@ -181,10 +177,8 @@ void pre_init(void)
                 ZF_LOGF("Failed to realloc");
             }
         }
-        printf("Trying to make camkes dma allocation\n");
         void *buf = camkes_dma_alloc(PAGE_SIZE_4K, PAGE_SIZE_4K, false);
         if (!buf) {
-            printf("Failed at buf number %d\n",  num_bufs);
             break;
         }
         dma_bufs[num_bufs] = buf;
@@ -204,6 +198,7 @@ void pre_init(void)
         }
         vka_object_t pts[5];
         int num_pts = 5;
+
         error = sel4utils_map_iospace_page(&vka, iospace.capPtr, frame_dup.capPtr, paddr, seL4_AllRights, 1, PAGE_BITS_4K, pts, &num_pts);
         if (error) {
             ZF_LOGF("Failed to map iospace page");
@@ -218,4 +213,3 @@ void pre_init(void)
 	err = usb_init(USB_HOST_DEFAULT, &io_ops, &mutex_ops, &usb);
 	assert(!err);
 }
-
