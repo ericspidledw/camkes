@@ -18,7 +18,7 @@
 #define VID 0x067b //Prolific Technology Inc.
 #define DID 0x2303 //USB-Serial Controller
 
-char *str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+char *str = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n";
 
 static inline void udelay(uint32_t us)
 {
@@ -40,16 +40,17 @@ int run()
 		pl2303 = cdc_find(VID, DID);
 		udelay(5000);
 	}
-	printf("Found PL2303\n");
+	printf("Found PL2303 it is at addr %p\n", pl2303);
 
 	/* Connect to the sub class driver */
-	cdc_connect(pl2303);
+	cdc_connect(pl2303); // call connect
 
-	cdc_configure(pl2303, 115200, 1, 0, 8);
+	cdc_configure(pl2303, 115200, 1, 0, 8); // then configure...
 
 	/* Send Data */
 	memcpy(fdata, str, strlen(str));
-	cdc_write(pl2303, strlen(str));
+	printf("Strlength of str is %d\n", strlen(str));
+	cdc_write(pl2303, strlen(str)); // then write...
 
 	printf("Well done, PL2303\n");
 	return 0;

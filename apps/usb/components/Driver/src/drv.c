@@ -174,7 +174,7 @@ void pre_init(void)
     if (error) {
         ZF_LOGF("Failed to get iospace");
     }
-    int total_bufs = 99;
+    int total_bufs = 150;
     int num_bufs = 0;
     void **dma_bufs = malloc(sizeof(void*) * total_bufs);
     if (!dma_bufs) {

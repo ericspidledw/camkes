@@ -111,7 +111,7 @@ assembly {
         drv.iospace_id = 0x13;
         drv.pci_bdf = "0:14.0";
         drv.simple_untyped20_pool = 2;
-        drv.heap_size = 0x10000;
+        drv.heap_size = 0x100000;
 #endif
 	}
 }

@@ -13,7 +13,7 @@
 #include <camkes.h>
 #include <usb/usb.h>
 #include <usb/drivers/cdc.h>
-
+#include <usb/drivers/pl2303.h>
 extern usb_t usb;
 
 uintptr_t cdc_find(int vid, int did)
@@ -23,6 +23,9 @@ uintptr_t cdc_find(int vid, int did)
 
 	do {
 		usbdev = usb_get_device(&usb, cnt);
+		if(usbdev && cnt == 2){
+			ZF_LOGE("USB dev vend_id is 0x%lx and prod_id is %lx", usbdev->vend_id, usbdev->prod_id);
+		}
 		if (usbdev &&
 			usbdev->vend_id == vid && usbdev->prod_id == did) {
 			break;
@@ -35,11 +38,16 @@ uintptr_t cdc_find(int vid, int did)
 
 int cdc_connect(uintptr_t dev)
 {
-	return usb_cdc_bind((usb_dev_t*)dev);
+	return usb_pl2303_bind((usb_dev_t *) dev); // call bind first.....
+	// return usb_cdc_bind((usb_dev_t*)dev);
 }
 
 void cdc_configure(uintptr_t dev, int bps, int stop, int parity, int bits)
 {
+	ZF_LOGE("Configure the pl2303 device");
+	usb_pl2303_configure((usb_dev_t *) dev, 115200, 8, PARITY_NONE, 0);
+	return;
+
 	struct acm_line_coding coding;
 
 	coding.dwDTERate = bps;
@@ -76,11 +84,13 @@ void cdc_configure(uintptr_t dev, int bps, int stop, int parity, int bits)
 
 void cdc_write(uintptr_t dev, int size)
 {
-	usb_cdc_write((usb_dev_t*)dev, (void*)buf, size);
+	ZF_LOGE("Writing to the CDC device %s", (char*)buf);
+	usb_pl2303_write((usb_dev_t*) dev, (void*) buf, size);
+	// usb_cdc_write((usb_dev_t*)dev, (void*)buf, size);
 }
 
 int cdc_read(uintptr_t dev, int size)
 {
-	return usb_cdc_read((usb_dev_t*)dev, (void*)buf, size);
+	return usb_pl2303_read((usb_dev_t*)dev, (void*)buf, size);
 }
 
