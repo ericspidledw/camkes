@@ -48,9 +48,18 @@ int run()
 	cdc_configure(pl2303, 115200, 1, 0, 8); // then configure...
 
 	/* Send Data */
-	memcpy(fdata, str, strlen(str));
-	printf("Strlength of str is %d\n", strlen(str));
-	cdc_write(pl2303, strlen(str)); // then write...
+	// memcpy(fdata, str, strlen(str));
+	// printf("Strlength of str is %d\n", strlen(str));
+	// cdc_write(pl2303, strlen(str)); // then write...
+
+	while(1){
+		int chars_read = cdc_read(pl2303, sizeof(char));
+		if(chars_read){
+			ZF_LOGE("Read %d chars", chars_read);
+			while(1);
+		}
+		udelay(500000);
+	}
 
 	printf("Well done, PL2303\n");
 	return 0;
