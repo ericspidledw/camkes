@@ -15,6 +15,8 @@ import <TimeServer/TimeServer.camkes>;
 import <global-connectors.camkes>;
 
 import "components/Driver/Driver.camkes";
+import "components/Touchscreen/Touchscreen.camkes";
+import "components/Keyboard/Keyboard.camkes";
 import "components/Pl2303/Pl2303.camkes";
 
 component EHCI {
@@ -47,7 +49,9 @@ assembly {
 		component TimeServer time_server;
 		component XHCI xhci;
 		component Driver drv;
-		component Pl2303 serial;
+		// component Pl2303 serial;
+		component Touchscreen touchscreen;
+		component Keyboard keyboard;
 		// component Probe probe;
 
 		// connection seL4HardwareMMIO ehci_mem(from drv.mem, to ehci.mem);
@@ -67,8 +71,14 @@ assembly {
 		connection seL4HardwareIOPort pci(from drv.port, to xhci.port);
 
 #endif
-		connection seL4RPCCall serial_usb(from serial.cdc, to drv.cdc);
-		connection seL4SharedData serial_data(from serial.fdata, to drv.buf);
+		// connection seL4RPCCall serial_usb(from serial.cdc, to drv.cdc);
+		// connection seL4SharedData serial_data(from serial.fdata, to drv.buf);
+
+		connection seL4RPCCall touchscreen_usb(from touchscreen.hid, to drv.hid);
+		connection seL4SharedData touchscreen_data(from touchscreen.tbuf, to drv.buf);
+
+		connection seL4RPCCall keyboard_usb(from keyboard.hid, to drv.hid);
+		connection seL4SharedData keyboard_data(from keyboard.kbuf, to drv.buf);
 
 		// connection seL4RPCCall probe_usb(from probe.cdc, to drv.cdc);
 		// connection seL4SharedData probe_data(from probe.fdata, to drv.buf);

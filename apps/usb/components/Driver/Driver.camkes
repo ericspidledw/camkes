@@ -42,5 +42,6 @@ component Driver {
 	/* USB interface */
 	dataport Buf buf;
 	provides USB_CDC cdc;
+	provides USB_HID hid;
 }
 

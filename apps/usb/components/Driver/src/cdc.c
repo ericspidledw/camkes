@@ -86,7 +86,6 @@ void cdc_write(uintptr_t dev, int size)
 {
 	ZF_LOGE("Writing to the CDC device %s", (char*)buf);
 	usb_pl2303_write((usb_dev_t*) dev, (void*) buf, size);
-	// usb_cdc_write((usb_dev_t*)dev, (void*)buf, size);
 }
 
 int cdc_read(uintptr_t dev, int size)
@@ -94,3 +93,7 @@ int cdc_read(uintptr_t dev, int size)
 	return usb_pl2303_read((usb_dev_t*)dev, (void*)buf, size);
 }
 
+int cdc_poll(uintptr_t dev){
+	usb_pl2303_poll((usb_dev_t*)dev);
+	return 0;
+}

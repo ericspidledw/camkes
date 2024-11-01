@@ -53,14 +53,15 @@ int run()
 	// cdc_write(pl2303, strlen(str)); // then write...
 
 	while(1){
-		int chars_read = cdc_read(pl2303, sizeof(char));
-		if(chars_read){
-			ZF_LOGE("Read %d chars", chars_read);
-			while(1);
-		}
-		udelay(500000);
-	}
 
+		int read_char = cdc_read(pl2303, sizeof(char));
+		if(read_char){
+			ZF_LOGE("read %s", fdata);
+		}
+
+		ps_udelay(10000);
+
+	}
 	printf("Well done, PL2303\n");
 	return 0;
 }

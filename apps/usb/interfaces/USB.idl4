@@ -17,5 +17,12 @@ procedure USB_CDC {
 			in int parity, in int bits);
 	void write(in uintptr_t dev, in int size);
 	int read(in uintptr_t dev, in int size);
+	int poll(in uintptr_t dev);
 };
 
+procedure USB_HID {
+	uintptr_t find(in int vid, in int did);
+	int connect(in uintptr_t dev);
+	void configure(in uintptr_t dev);
+	void read(in uintptr_t dev);
+}

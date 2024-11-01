@@ -1,0 +1,16 @@
+/*
+ * Copyright 2024, Dornerworks
+ *
+ * LICENSE HERE
+ *
+ *
+ */
+
+import "../../interfaces/USB.idl4";
+
+component Keyboard {
+	control;
+	dataport Buf kbuf;
+	uses USB_HID hid;
+}
+

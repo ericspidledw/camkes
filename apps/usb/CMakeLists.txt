@@ -21,6 +21,7 @@ DeclareCAmkESComponent(
     SOURCES
     components/Driver/src/drv.c
     components/Driver/src/cdc.c
+    components/Driver/src/hid.c
     LIBS
     usbdrivers sel4simple pci sel4allocman
 
@@ -29,6 +30,18 @@ DeclareCAmkESComponent(
     Pl2303
     SOURCES
     components/Pl2303/src/main.c
+)
+
+DeclareCAmkESComponent(
+    Touchscreen
+    SOURCES
+    components/Touchscreen/src/main.c
+)
+
+DeclareCAmkESComponent(
+    Keyboard
+    SOURCES
+    components/Keyboard/src/main.c
 )
 # DeclareCAmkESComponent(
 #     Probe
